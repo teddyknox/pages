@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OP Snapshot Restore and Lateral State</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #53616b;
+      --line: #cfd8df;
+      --soft: #f4f7f9;
+      --panel: #ffffff;
+      --blue: #1f6feb;
+      --green: #247a4d;
+      --orange: #b25b00;
+      --red: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #eef2f5;
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 48px 28px 72px;
+      background: var(--panel);
+      min-height: 100vh;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      max-width: 880px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 48px;
+      font-size: 28px;
+      border-top: 1px solid var(--line);
+      padding-top: 28px;
+    }
+
+    h3 {
+      margin-top: 26px;
+      font-size: 20px;
+    }
+
+    p {
+      max-width: 820px;
+      margin: 14px 0 0;
+    }
+
+    ul {
+      max-width: 860px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    code {
+      background: #edf2f7;
+      border: 1px solid #d9e2ea;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.94em;
+    }
+
+    .lede {
+      margin-top: 22px;
+      font-size: 20px;
+      color: var(--muted);
+      max-width: 880px;
+    }
+
+    .callout {
+      margin: 28px 0;
+      padding: 18px 20px;
+      border-left: 5px solid var(--blue);
+      background: #eef5ff;
+      max-width: 900px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+      max-width: 980px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+      margin: 0 6px 8px 0;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .diagram {
+      margin: 28px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      overflow-x: auto;
+    }
+
+    .diagram svg {
+      display: block;
+      width: 100%;
+      min-width: 760px;
+      height: auto;
+    }
+
+    .box {
+      fill: #fff;
+      stroke: #8aa0af;
+      stroke-width: 1.3;
+      rx: 8;
+    }
+
+    .box-blue {
+      fill: #eef5ff;
+      stroke: #6ba2ff;
+    }
+
+    .box-green {
+      fill: #edf9f2;
+      stroke: #63b783;
+    }
+
+    .box-orange {
+      fill: #fff5e8;
+      stroke: #eba45a;
+    }
+
+    .box-red {
+      fill: #fff1f0;
+      stroke: #f08a82;
+    }
+
+    .arrow {
+      stroke: #566875;
+      stroke-width: 1.8;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+
+    .arrow-red {
+      stroke: var(--red);
+      stroke-width: 2.1;
+      fill: none;
+      marker-end: url(#arrow-red);
+    }
+
+    .svg-title {
+      font: 700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      fill: var(--ink);
+    }
+
+    .svg-text {
+      font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      fill: var(--muted);
+    }
+
+    .decision {
+      border-collapse: collapse;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 960px;
+      font-size: 15px;
+    }
+
+    .decision th,
+    .decision td {
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .decision th {
+      background: #f4f7f9;
+    }
+
+    .yes {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .no {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    footer {
+      margin-top: 52px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        padding: 30px 18px 56px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>OP Snapshot Restore and Lateral State</h1>
+  <p class="lede">
+    A non-genesis snapshot exposed a gap between Feldera's durable collection
+    checkpoint and the in-memory state used by OP execution lateral views. This
+    document explains the problem, the pragmatic V1 solution, and the more
+    principled Feldera-native alternative.
+  </p>
+
+  <div class="callout">
+    <strong>Recommendation</strong>
+    Use product-side restore hydration as the supported V1 path. Treat
+    Feldera-native lateral checkpointing as the long-term architectural target,
+    but do not rely on it until it has dedicated DBSP tests that prove hot
+    state, cache state, finalization state, cold-store state, and continued
+    evaluation restore correctly.
+  </div>
+
+  <h2>Short Version</h2>
+  <p>
+    Feldera can checkpoint the persisted dataflow collections that power SQL
+    queries. The OP executor also uses a lateral view named
+    <code>execute_l2_block</code>. That lateral view reads previous execution
+    state through a fast in-memory handle. After restore, SQL could still see
+    block 1, but the lateral handle could not. When block 2 arrived, execution
+    could not find block 1 as its parent and produced an empty result.
+  </p>
+  <p>
+    The pragmatic V1 fix is to reconstruct the executor lateral handle from the
+    restored SQL state views during snapshot restore. The architecturally cleaner
+    fix is for Feldera's lateral operator itself to participate fully in
+    checkpoint and restore, so product code does not need to know how to rebuild
+    lateral internals.
+  </p>
+
+  <h2>What Is a Lateral View?</h2>
+  <p>
+    Most SQL views are relational: rows flow in, rows flow out, and Feldera keeps
+    the result incrementally up to date. A lateral view is different. It is a
+    controlled escape hatch for stateful sequential work. In <code>op-con-ex-node</code>,
+    the important example is L2 block execution.
+  </p>
+  <p>
+    To execute block N, the executor needs facts produced by earlier blocks:
+    parent block metadata, account balances, storage slots, bytecode, and rollup
+    config. SQL declares which state views the lateral evaluator can read. Rust
+    runs the sequential execution logic.
+  </p>
+
+  <div class="diagram" aria-label="Lateral view mental model">
+    <svg viewBox="0 0 980 300" role="img">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#566875"></path>
+        </marker>
+        <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#b42318"></path>
+        </marker>
+      </defs>
+
+      <rect class="box box-blue" x="34" y="70" width="190" height="86"></rect>
+      <text class="svg-title" x="58" y="103">New L2 payload</text>
+      <text class="svg-text" x="58" y="127">block number, parent hash,</text>
+      <text class="svg-text" x="58" y="146">timestamp, transactions</text>
+
+      <rect class="box box-green" x="392" y="38" width="236" height="104"></rect>
+      <text class="svg-title" x="418" y="72">execute_l2_block</text>
+      <text class="svg-text" x="418" y="96">Rust lateral evaluator</text>
+      <text class="svg-text" x="418" y="116">runs sequential EVM logic</text>
+
+      <rect class="box box-orange" x="390" y="184" width="240" height="82"></rect>
+      <text class="svg-title" x="414" y="218">Versioned state views</text>
+      <text class="svg-text" x="414" y="242">accounts, storage, code, block meta</text>
+
+      <rect class="box" x="756" y="70" width="190" height="86"></rect>
+      <text class="svg-title" x="780" y="103">Execution output</text>
+      <text class="svg-text" x="780" y="127">new block metadata</text>
+      <text class="svg-text" x="780" y="146">new state deltas</text>
+
+      <path class="arrow" d="M224 113 H388"></path>
+      <path class="arrow" d="M510 184 V146"></path>
+      <path class="arrow" d="M628 90 H756"></path>
+      <path class="arrow" d="M850 156 C850 235 660 254 632 235"></path>
+      <text class="svg-text" x="668" y="256">feedback for later blocks</text>
+    </svg>
+  </div>
+
+  <h2>The Snapshot Restore Problem</h2>
+  <p>
+    A product snapshot wraps a Feldera checkpoint plus ethql-owned metadata and
+    external assets. Feldera's checkpoint restores persisted collections. That
+    is necessary, but it does not automatically guarantee that every in-memory
+    lateral state handle is ready to answer the next lateral evaluation.
+  </p>
+  <p>
+    The test that exposed the issue restored a snapshot at block 1, then sent
+    block 2. Public SQL queries could see block 1. The executor lateral state
+    could not see block 1. So block 2 execution treated its parent as missing.
+  </p>
+
+  <div class="diagram" aria-label="Restore gap diagram">
+    <svg viewBox="0 0 980 330" role="img">
+      <defs>
+        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#566875"></path>
+        </marker>
+        <marker id="arrow-red2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#b42318"></path>
+        </marker>
+      </defs>
+
+      <rect class="box box-blue" x="42" y="52" width="220" height="92"></rect>
+      <text class="svg-title" x="68" y="86">Feldera checkpoint</text>
+      <text class="svg-text" x="68" y="112">persisted collections</text>
+      <text class="svg-text" x="68" y="132">contain block 1</text>
+
+      <rect class="box box-green" x="390" y="40" width="240" height="112"></rect>
+      <text class="svg-title" x="416" y="76">Restored SQL views</text>
+      <text class="svg-text" x="416" y="102">block_history has block 1</text>
+      <text class="svg-text" x="416" y="124">exec_block_meta has block 1</text>
+
+      <rect class="box box-red" x="390" y="206" width="240" height="86"></rect>
+      <text class="svg-title" x="416" y="240">Lateral state handle</text>
+      <text class="svg-text" x="416" y="264">empty or incomplete after restore</text>
+
+      <rect class="box box-orange" x="748" y="144" width="190" height="92"></rect>
+      <text class="svg-title" x="772" y="178">Block 2 arrives</text>
+      <text class="svg-text" x="772" y="202">needs parent block 1</text>
+      <text class="svg-text" x="772" y="222">execution cannot proceed</text>
+
+      <path class="arrow" d="M262 98 H390"></path>
+      <path class="arrow-red" d="M630 250 C710 250 706 190 748 190"></path>
+      <text class="svg-text" x="652" y="272">parent lookup misses</text>
+      <path class="arrow" d="M630 96 C720 96 716 144 748 170"></path>
+      <text class="svg-text" x="646" y="86">SQL reads succeed</text>
+    </svg>
+  </div>
+
+  <h3>Why this is easy to miss</h3>
+  <ul>
+    <li>SQL queries after restore look correct because the persisted collections are back.</li>
+    <li>The restored current head can be correct before any new execution happens.</li>
+    <li>The failure only appears when a later block asks the lateral evaluator to read prior state.</li>
+  </ul>
+
+  <h2>Preferred V1 Solution</h2>
+  <p>
+    During snapshot restore, after Feldera restores the persisted checkpoint and
+    before the node serves normal traffic, <code>op-con-ex-node</code> should
+    hydrate the executor lateral handle from the restored SQL state views.
+  </p>
+  <p>
+    In concrete terms, restore reads these state sources:
+  </p>
+  <ul>
+    <li><code>exec_evm_accounts</code></li>
+    <li><code>exec_evm_storage</code></li>
+    <li><code>exec_evm_code</code></li>
+    <li><code>exec_block_meta</code></li>
+    <li>the rollup config projection used by <code>exec_rollup_config</code></li>
+  </ul>
+  <p>
+    It converts those rows back into <code>execute_l2_block_StateRow</code>
+    variants and inserts them into the lateral handle at their original
+    versions. After that, block 2 sees block 1 through the same lateral state
+    interface it would have used without a restore.
+  </p>
+
+  <div class="diagram" aria-label="Preferred restore flow">
+    <svg viewBox="0 0 980 360" role="img">
+      <defs>
+        <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#566875"></path>
+        </marker>
+      </defs>
+
+      <rect class="box box-blue" x="34" y="60" width="190" height="82"></rect>
+      <text class="svg-title" x="58" y="94">1. Restore checkpoint</text>
+      <text class="svg-text" x="58" y="118">Feldera collections</text>
+
+      <rect class="box box-green" x="292" y="60" width="200" height="82"></rect>
+      <text class="svg-title" x="316" y="94">2. Verify boundary</text>
+      <text class="svg-text" x="316" y="118">head and state root</text>
+
+      <rect class="box box-orange" x="560" y="46" width="220" height="110"></rect>
+      <text class="svg-title" x="584" y="80">3. Hydrate lateral state</text>
+      <text class="svg-text" x="584" y="104">read restored SQL state</text>
+      <text class="svg-text" x="584" y="124">insert hot state rows</text>
+      <text class="svg-text" x="584" y="144">into executor handle</text>
+
+      <rect class="box" x="392" y="234" width="220" height="82"></rect>
+      <text class="svg-title" x="416" y="268">4. Serve traffic</text>
+      <text class="svg-text" x="416" y="292">new blocks continue</text>
+
+      <path class="arrow" d="M224 101 H292"></path>
+      <path class="arrow" d="M492 101 H560"></path>
+      <path class="arrow" d="M670 156 C670 214 570 232 522 234"></path>
+      <path class="arrow" d="M502 234 C445 228 392 190 392 146"></path>
+      <text class="svg-text" x="346" y="183">validation and hydration happen before normal operation</text>
+    </svg>
+  </div>
+
+  <h2>The Alternative: Feldera-Native Lateral Restore</h2>
+  <p>
+    The "right" place to solve this in the long run is Feldera, not
+    <code>op-con-ex-node</code>. A lateral evaluator is a DBSP operator with
+    internal runtime state. If Feldera advertises checkpoint/restore for a
+    circuit, every stateful operator in that circuit should restore to a state
+    where the next input can be processed correctly.
+  </p>
+  <p>
+    In that design, <code>GenericLateralEvalOp</code> would be a first-class
+    checkpoint participant. It would save and restore the state that is not
+    represented by ordinary SQL output collections, and its external
+    <code>LateralStateHandle</code> would be populated before normal execution
+    resumes.
+  </p>
+
+  <div class="diagram" aria-label="Feldera-native lateral restore flow">
+    <svg viewBox="0 0 980 330" role="img">
+      <defs>
+        <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#566875"></path>
+        </marker>
+      </defs>
+
+      <rect class="box box-blue" x="42" y="62" width="210" height="94"></rect>
+      <text class="svg-title" x="66" y="96">Feldera checkpoint</text>
+      <text class="svg-text" x="66" y="120">collections plus operator</text>
+      <text class="svg-text" x="66" y="140">runtime state</text>
+
+      <rect class="box box-orange" x="352" y="36" width="260" height="146"></rect>
+      <text class="svg-title" x="380" y="72">GenericLateralEvalOp</text>
+      <text class="svg-text" x="380" y="96">hot state</text>
+      <text class="svg-text" x="380" y="116">cached outputs and indexes</text>
+      <text class="svg-text" x="380" y="136">watermarks and finalization</text>
+      <text class="svg-text" x="380" y="156">cold-store references</text>
+
+      <rect class="box box-green" x="730" y="62" width="210" height="94"></rect>
+      <text class="svg-title" x="754" y="96">Restored circuit</text>
+      <text class="svg-text" x="754" y="120">SQL views and lateral</text>
+      <text class="svg-text" x="754" y="140">handles agree</text>
+
+      <rect class="box" x="382" y="230" width="210" height="70"></rect>
+      <text class="svg-title" x="406" y="262">Next input</text>
+      <text class="svg-text" x="406" y="284">processed without product hydration</text>
+
+      <path class="arrow" d="M252 109 H352"></path>
+      <path class="arrow" d="M612 109 H730"></path>
+      <path class="arrow" d="M835 156 C835 248 635 270 592 265"></path>
+    </svg>
+  </div>
+
+  <h3>What Feldera would need to own</h3>
+  <table class="decision">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>Why it matters</th>
+        <th>Long-term requirement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Hot lateral state</td>
+        <td>The versioned rows read by the next lateral probe.</td>
+        <td>Checkpoint or deterministically rebuild before the first post-restore step.</td>
+      </tr>
+      <tr>
+        <td>Cached probe outputs</td>
+        <td>Used by the generic operator to retract or reuse prior evaluations.</td>
+        <td>Restore, or define a safe replay protocol that recreates them before any retractions can arrive.</td>
+      </tr>
+      <tr>
+        <td>Access lists and reverse index</td>
+        <td>Used to detect when a prior probe must be re-evaluated because state changed.</td>
+        <td>Restore consistently with cached outputs, or invalidate and rebuild under a proven algorithm.</td>
+      </tr>
+      <tr>
+        <td>Finalization and cold store state</td>
+        <td>Controls what is retained in memory and what is flushed to cold storage.</td>
+        <td>Checkpoint hot/cold boundaries and ensure restored handles read both tiers correctly.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    This is the cleaner abstraction boundary because it makes lateral restore a
+    property of Feldera circuits rather than a special case in every product
+    crate. It is also harder: the operator must preserve not only what a lateral
+    state read returns today, but also enough internal bookkeeping to handle
+    later retractions, invalidations, finalization, and cold-store reads.
+  </p>
+
+  <h2>Comparing the Two Approaches</h2>
+  <table class="decision">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Product-side hydration</th>
+        <th>Feldera-native lateral checkpointing</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Best fit</td>
+        <td><span class="yes">V1 production path</span> for <code>op-con-ex-node</code> snapshots.</td>
+        <td><span class="yes">Long-term platform path</span> for all lateral users.</td>
+      </tr>
+      <tr>
+        <td>Owner</td>
+        <td><code>op-con-ex-node</code> owns how execution state is reconstructed.</td>
+        <td>Feldera owns lateral operator checkpoint and restore semantics.</td>
+      </tr>
+      <tr>
+        <td>Correctness surface</td>
+        <td>Narrow: restore the exact state the OP executor reads next.</td>
+        <td>Broad: hot state, cached outputs, access indexes, watermarks, finalization, and cold stores.</td>
+      </tr>
+      <tr>
+        <td>Product coupling</td>
+        <td>High: it knows about <code>execute_l2_block</code> state rows.</td>
+        <td>Low: product code asks Feldera to restore the circuit.</td>
+      </tr>
+      <tr>
+        <td>Test burden</td>
+        <td>Integration tests around OP snapshot restore and continued execution.</td>
+        <td>DBSP operator tests plus product integration tests for every lateral restore mode.</td>
+      </tr>
+      <tr>
+        <td>Failure mode</td>
+        <td>Hydration can drift if SQL state shapes or executor state rows change.</td>
+        <td>Generic restore can be subtly wrong under retractions or finalization if internal indexes are incomplete.</td>
+      </tr>
+      <tr>
+        <td>Operational story</td>
+        <td>Explicit and auditable in the ethql snapshot manifest/restore flow.</td>
+        <td>Simpler for operators once proven: Feldera checkpoint means full circuit checkpoint.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    The right final architecture is Feldera-native. The right current
+    implementation is product-side hydration, because it is smaller, explicit,
+    testable today, and aligned with the V1 snapshot contract. We should avoid
+    presenting product hydration as the ideal end state; it is a compatibility
+    layer that lets the product ship safely while the platform-level restore
+    contract matures.
+  </p>
+
+  <div class="grid">
+    <section class="card">
+      <h3>Use Now</h3>
+      <p><span class="tag">V1</span><span class="tag">explicit</span><span class="tag">tested</span></p>
+      <ul>
+        <li><code>LateralStateHandle::insert_hot</code> as a small restore support API.</li>
+        <li>Product-side hydration of <code>execute_l2_block</code> state.</li>
+        <li>Restore verification before serving normal traffic.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>Build Toward</h3>
+      <p><span class="tag">generic</span><span class="tag">platform</span><span class="tag">needs tests</span></p>
+      <ul>
+        <li>Generic <code>GenericLateralEvalOp</code> checkpoint/restore as a proven Feldera contract.</li>
+        <li>A restore path where SQL collections and lateral handles are restored together by the runtime.</li>
+      </ul>
+    </section>
+  </div>
+
+  <h2>Operational Contract</h2>
+  <p>
+    The V1 snapshot contract should say:
+  </p>
+  <ul>
+    <li>The Feldera checkpoint is the source of truth for restored SQL collections.</li>
+    <li>The ethql manifest is the operator-facing compatibility and integrity contract.</li>
+    <li><code>op-con-ex-node</code> owns reconstruction of product-specific external and lateral execution state.</li>
+    <li>Restore must verify the boundary head and state root before normal service starts.</li>
+    <li>Restore must prove continued execution from the restored boundary in integration tests.</li>
+  </ul>
+
+  <h2>Recommended Follow-Up</h2>
+  <p>
+    If we want Feldera-native lateral checkpointing later, build it as a separate
+    Feldera task with a small fixture lateral operator:
+  </p>
+  <ul>
+    <li>Create state, probes, cached outputs, and finalization activity.</li>
+    <li>Checkpoint and restore the DBSP circuit.</li>
+    <li>Verify external handle reads after restore.</li>
+    <li>Submit new probes and verify continued lateral evaluation.</li>
+    <li>Repeat with finalized state and cold-store movement.</li>
+  </ul>
+
+  <footer>
+    Suggested owner: <code>op-con-ex-node</code> for V1 product restore, Feldera
+    runtime for any later generic lateral checkpoint contract.
+  </footer>
+</main>
+</body>
+</html>
