@@ -1,28 +1,307 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OP Stack transaction confirmations — 3-slide presentation</title><meta name="description" content="Three stages for OP Stack transaction confirmations: measure latency, clarify notifications, and reduce waiting."><meta name="color-scheme" content="light"><style>
-:root{--red:#e80026;--ink:#17181b;--muted:#60636b;--paper:#fff;--bg:#f5f5f6;--line:#dedee2;--blush:#fff0f3;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg);font-size:16px;color-scheme:light}
-*{box-sizing:border-box}body{margin:0}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}a{color:var(--red);text-underline-offset:3px}button:focus-visible,a:focus-visible,[contenteditable]:focus-visible{outline:3px solid #2929d9;outline-offset:4px}button:disabled{opacity:.35;cursor:default}button,.button{border:1px solid var(--line);border-radius:7px;padding:.58rem .8rem;color:var(--ink);background:#fff;text-decoration:none;font-size:.875rem;white-space:nowrap;line-height:1.3}button:hover,.button:hover{border-color:var(--ink)}button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}button[aria-pressed=true]{background:var(--red);color:#fff;border-color:var(--red)}
-.toolbar{max-width:1440px;margin:auto;padding:1rem 2rem;display:flex;gap:1.3rem;align-items:center;flex-wrap:wrap}.brand{font-size:.9rem;font-weight:800;letter-spacing:.05em;color:var(--ink);text-decoration:none}.tabs{display:flex;gap:.2rem}.tabs a{padding:.45rem .75rem;text-decoration:none;color:var(--muted);font-size:.9rem;border-radius:6px}.tabs a[aria-current=page]{background:#fff;color:var(--ink);font-weight:700}.actions{display:flex;gap:.5rem;margin-left:auto}.edit-status{width:100%;margin:0;color:var(--muted);font-size:.875rem}.edit-status:empty{display:none}
-.deck{max-width:1400px;margin:0 auto;padding:0 2rem 1rem}.slide{background:var(--paper);border-top:5px solid var(--red);padding:2.2rem 2.7rem 1.4rem;border-radius:0 0 10px 10px;min-height:690px;box-shadow:0 8px 36px #10101008}.slide[hidden]{display:none}.eyebrow{display:flex;justify-content:space-between;gap:1rem;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.eyebrow .phase{color:var(--red)}h1,h2,h3,p{margin-top:0}.slide h1{font-size:clamp(2rem,3.15vw,2.85rem);line-height:1.12;letter-spacing:-.035em;margin:1.65rem 0 1.9rem;max-width:1120px}.label{font-weight:700;letter-spacing:.05em;font-size:.8rem;color:var(--red);text-transform:uppercase;display:block;margin-bottom:.7rem}.problem{font-size:1.22rem;line-height:1.5;max-width:1090px;margin-bottom:1.8rem}.grid{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.4fr);gap:2.4rem;align-items:start}.metric{background:var(--blush);border-radius:10px;padding:1.5rem 1.6rem}.metric .value{font-size:clamp(3rem,5.5vw,5.2rem);font-weight:800;letter-spacing:-.06em;line-height:1.04;display:block;margin:.8rem 0 .5rem}.metric .subtitle{font-size:1.05rem;font-weight:700;line-height:1.4}.metric p{margin-bottom:.65rem}.metric .scope{font-size:.94rem;line-height:1.5;color:var(--muted);margin-bottom:0}.solution h2{font-size:1.5rem;line-height:1.25;letter-spacing:-.02em;margin-bottom:1.3rem}.milestones{list-style:none;padding:0;margin:0;display:grid;gap:1.05rem}.milestones li{display:grid;grid-template-columns:2rem minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:.7rem}.number{display:grid;place-items:center;min-height:2rem;background:var(--blush);color:var(--red);font-weight:700;font-size:.8rem;border-radius:3px}.milestones strong{font-size:1.03rem}.milestones .description{font-size:.94rem;color:var(--muted);line-height:1.4}.note{font-size:.82rem;color:var(--muted);line-height:1.5;margin:1.3rem 0 0}.outcome{display:flex;gap:1.3rem;align-items:center;background:var(--ink);color:#fff;padding:1rem 1.2rem;border-radius:6px;margin-top:1.7rem;line-height:1.35;font-size:1.06rem;font-weight:700}.outcome .label{color:#ff94a5;margin:0;font-size:.7rem;flex-shrink:0}.slide-foot{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem;margin-top:1rem}.deck-controls{display:flex;justify-content:center;align-items:center;gap:1rem;padding:1.15rem 0 .25rem}.dots{display:flex;gap:.35rem}.dots button{padding:.45rem .8rem}.keyboard-hint{text-align:center;font-size:.8rem;color:var(--muted);margin:0 0 .65rem}
-.experience{grid-template-columns:1fr 1.08fr;gap:3rem}.experience .problem{font-size:1.2rem}.experience h2{font-size:1.8rem;margin-bottom:1.3rem}.bullets{padding-left:1.15rem;font-size:1.04rem;line-height:1.55;margin:0}.bullets li{padding-left:.15rem;margin-bottom:.5rem}.bullets li::marker{color:var(--red)}.notification-demo{padding:1.7rem;background:var(--bg);border-radius:10px}.choice-strip{display:flex;gap:.5rem;margin:1rem 0 1.5rem}.choice-strip span{flex:1;text-align:center;padding:.7rem .25rem;font-size:.8rem;font-weight:700;background:#fff;border-radius:4px;color:var(--muted)}.choice-strip .selected{background:var(--red);color:white}.notification{background:#fff;padding:1.2rem;margin-top:.85rem;border-radius:6px;line-height:1.5}.notification strong{display:block;margin-bottom:.4rem;font-size:.95rem}.notification p{color:var(--muted);font-size:1rem;margin:0}.notification.result{background:var(--blush)}.notification.result strong{color:var(--red)}
-.performance-grid{grid-template-columns:1.9fr 1fr}.routing{padding:1.5rem;border:1px solid var(--line);border-radius:8px}.route{display:flex;align-items:center;gap:.8rem;margin-top:1.7rem}.route .route-caption{font-size:.88rem;width:26%;color:var(--muted);line-height:1.4;flex-shrink:0}.route strong{font-size:1rem;white-space:nowrap}.route .hop{background:var(--bg);padding:.65rem;font-weight:700;font-size:.9rem;text-align:center;border-radius:4px;white-space:nowrap}.arrow{height:2px;flex:1;min-width:.7rem;background:var(--muted);position:relative}.arrow:after{content:'';position:absolute;right:-1px;top:-4px;border-left:6px solid var(--muted);border-top:5px solid transparent;border-bottom:5px solid transparent}.route.direct .arrow{background:var(--red)}.route.direct .arrow:after{border-left-color:var(--red)}.route.direct .route-caption,.route.direct strong:last-child{color:var(--red)}.other-candidates{padding:1rem 0}.other-candidates .label{color:var(--muted);margin-bottom:1.3rem}
-.brief{max-width:940px;margin:0 auto 3rem;padding:2.5rem 3.1rem;background:#fff;border-top:5px solid var(--red);box-shadow:0 8px 36px #10101008}.brief h1{font-size:2.35rem;line-height:1.13;letter-spacing:-.035em;margin:1.2rem 0 .85rem}.brief .intro{color:var(--muted);font-size:1.06rem;line-height:1.5;margin-bottom:1.5rem}.benchmark{display:grid;grid-template-columns:1fr 2.8fr;gap:1.4rem;align-items:center;background:var(--blush);padding:1.3rem 1.5rem;margin-bottom:1.75rem}.benchmark .value{font-size:2.9rem;color:var(--red);font-weight:800;letter-spacing:-.04em;white-space:nowrap}.benchmark small{font-size:.8rem;display:block;font-weight:700;line-height:1.5}.benchmark p{font-size:.94rem;line-height:1.5;margin:0}.brief section{margin:1.6rem 0}.brief h2{font-size:1.12rem;line-height:1.35;color:var(--red);margin-bottom:.7rem}.brief section p{font-size:1rem;line-height:1.6;margin-bottom:.65rem}.brief .note{border-top:1px solid var(--line);padding-top:1rem;margin-top:1.8rem}.sources{font-size:.78rem;line-height:1.6;color:var(--muted);margin-top:1rem}.sources a{margin-left:.3rem}
-body.editing [data-edit]{outline:1px dashed #e8002666;outline-offset:4px;border-radius:2px;cursor:text}body.editing [data-edit]:focus{outline:2px solid var(--red)}body.presenting{background:#fff}.presenting .toolbar{padding:.65rem 2rem}.presenting .toolbar .edit-action,.presenting .toolbar .brand,.presenting .toolbar .tabs{display:none}.presenting .deck{max-width:1550px}.presenting .slide{box-shadow:none}.presenting .keyboard-hint{display:none}[hidden]{display:none!important}
-@media(min-width:1600px){.slide{min-height:770px;padding:2.6rem 3.3rem}.slide h1{font-size:3.2rem}.problem{font-size:1.4rem}.grid{gap:3.5rem}.solution h2{font-size:1.7rem}.milestones{gap:1.5rem}.milestones strong{font-size:1.15rem}.milestones .description{font-size:1rem}.outcome{margin-top:2.5rem}}
-@media(max-width:1000px){.toolbar{padding:1rem}.deck{padding:0 1rem}.slide{padding:1.7rem;min-height:0}.grid{gap:1.5rem}.milestones li{grid-template-columns:1.8rem 1fr}.milestones .description{grid-column:2}.experience{gap:1.6rem}.performance-grid{grid-template-columns:1fr}.other-candidates{padding:0}.other-candidates ul{display:flex;gap:1.7rem;flex-wrap:wrap}.route{gap:.7rem}.slide h1{font-size:2.15rem}.brief{margin:0 1rem 2rem;padding:2rem}}
-@media(max-width:700px){.toolbar{gap:.7rem}.actions{width:100%;margin:0;flex-wrap:wrap}.actions button,.actions a{flex-grow:1;text-align:center}.toolbar .brand{margin-right:auto}.grid,.experience,.performance-grid{grid-template-columns:1fr}.eyebrow{font-size:.75rem}.eyebrow .context{display:none}.slide{padding:1.3rem}.slide h1{font-size:1.9rem;margin:1.4rem 0}.problem{font-size:1.08rem}.metric .value{font-size:3.8rem}.milestones li{grid-template-columns:2rem 1fr}.outcome{align-items:flex-start;flex-direction:column;gap:.4rem}.experience h2{font-size:1.5rem}.route{flex-wrap:wrap;gap:.5rem}.route .route-caption{width:100%}.route .hop{font-size:.82rem}.route strong{font-size:.92rem}.routing{padding:1.1rem}.other-candidates ul{display:block}.brief{margin:0 .75rem 1rem;padding:1.5rem}.brief h1{font-size:1.85rem}.benchmark{grid-template-columns:1fr;gap:.6rem;padding:1.1rem}.benchmark .value{font-size:2.6rem}.brief section p{line-height:1.55}.notification-demo{padding:1.15rem}.keyboard-hint{display:none}.slide-foot .context{display:none}}
-@media(prefers-reduced-motion:no-preference){button,a{transition:background .12s,border-color .12s}}
-@media print{@page{size:A4;margin:12mm}body{background:white}.toolbar,.deck-controls,.keyboard-hint{display:none!important}.brief{max-width:none;margin:0;padding:0;border-top:3px solid var(--red);box-shadow:none}.brief h1{font-size:22pt}.brief .eyebrow{font-size:8pt;margin-top:10pt}.brief .intro{font-size:10pt}.benchmark{margin:12pt 0;padding:10pt;grid-template-columns:1fr 3fr;print-color-adjust:exact}.benchmark p{font-size:9pt}.benchmark .value{font-size:27pt}.brief section{margin:10pt 0}.brief h2{font-size:11pt;margin-bottom:4pt}.brief section p{font-size:10pt;line-height:1.3;margin-bottom:5pt}.brief .note,.sources{font-size:8pt;line-height:1.3}.brief .note{margin-top:10pt;padding-top:6pt}.deck{padding:0;max-width:none}.slide,.slide[hidden]{display:block!important;box-shadow:none;break-after:page;min-height:0;border-radius:0;padding:18pt 0}.slide:last-child{break-after:auto}.slide h1{font-size:25pt}.problem{font-size:13pt}.slide .grid{gap:15pt}.slide .metric .value{font-size:40pt}.slide .outcome{print-color-adjust:exact}.slide .eyebrow{font-size:8pt}[data-edit]{outline:none!important}}
-</style></head>
-<body data-page="slides" data-filename="op-stack-confirmations-slides.html"><header class="toolbar"><a class="brand" href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-slides.html">OP STACK</a><nav class="tabs" aria-label="Meeting documents"><a href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-slides.html" aria-current="page">Slides</a><a href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-one-pager.html">One-pager</a></nav><div class="actions"><button class="edit-action" id="edit" aria-pressed="false">Edit text</button><button class="edit-action" id="save">Save HTML</button><a class="button edit-action" href="https://github.com/teddyknox/pages/edit/main/published/op-stack-confirmations-20260909-slides.html" target="_blank" rel="noopener">Edit shared page ↗</a><button id="present" class="primary">Present</button></div><p class="edit-status" id="edit-status" role="status" aria-live="polite"></p></header>
-<main class="deck" aria-label="Three-slide presentation"><section class="slide" id="slide-1" aria-labelledby="s1title"><div class="eyebrow"><span class="phase">01 / Measurement</span><span class="context">OP Stack · Product + Engineering</span></div><h1 id="s1title" data-edit="s1-title">Confirmation latency has measurement gaps.</h1><span class="label">Problem</span><p data-edit="s1-problem" class="problem">Existing monitoring covers pieces of the journey. We lack a verified baseline across the milestones users care about.</p><div class="grid"><div class="metric"><span class="label">Best measured configuration</span><span data-edit="s1-median" class="value">~60 ms</span><p data-edit="s1-metric-label" class="subtitle">median end-to-end · OP Sepolia</p><p data-edit="s1-tail">67 ms p99 · 1,000 self-transfers</p><p data-edit="s1-scope" class="scope">Includes network latency. Submissions were deliberately timed around sub-block production.</p></div><div class="solution"><span class="label">Solution</span><h2 data-edit="s1-solution">Connect the instrumentation we already have.</h2><ol class="milestones"><li><span class="number">01</span><strong data-edit="s1-stage1">First received</strong><span data-edit="s1-detail1" class="description">First arrival at our RPC ingress</span></li><li><span class="number">02</span><strong data-edit="s1-stage2">Ordering preconfirmed</strong><span data-edit="s1-detail2" class="description">First accepted sub-block published</span></li><li><span class="number">03</span><strong data-edit="s1-stage3">Result available</strong><span data-edit="s1-detail3" class="description">Serving RPC exposes execution result</span></li></ol><p data-edit="s1-boundary" class="note">The benchmark clock runs from client submission to sub-block receipt. Builder execution precedes publication; RPC result availability is a separate milestone.</p></div></div><div class="outcome"><span class="label">Deliverable</span><span data-edit="s1-outcome">Prometheus distributions, coverage, and traces that explain the waiting.</span></div><div class="slide-foot"><span class="context">Transaction confirmations · September 2026</span><span>1 / 3</span></div></section><section class="slide" id="slide-2" aria-labelledby="s2title" hidden><div class="eyebrow"><span class="phase">02 / Developer experience</span><span class="context">OP Stack · Product + Engineering</span></div><h1 id="s2title" data-edit="s2-title">Confirmation signals require custom integration.</h1><div class="grid experience"><div><span class="label">Problem</span><p data-edit="s2-problem" class="problem">Apps need ordering and execution updates. Developers stitch together RPC replies, receipts and sub-block streams.</p><span class="label">Solution</span><h2 data-edit="s2-solution">One transaction subscription. Either milestone, or both.</h2><ul class="bullets"><li data-edit="s2-bullet0">Status and logs, including reverted transactions.</li><li data-edit="s2-bullet1">Works even when a transaction emits no logs.</li><li data-edit="s2-bullet2">Revocations and recovery after reconnects.</li></ul></div><div class="notification-demo"><span class="label">Choose what your application needs</span><div class="choice-strip" aria-label="Notification options: ordering, execution, or both"><span>ORDER</span><span>EXECUTION</span><span class="selected">BOTH</span></div><div class="notification"><strong data-edit="s2-order-title">ORDERING PRECONFIRMED</strong><p data-edit="s2-order-copy">Position established in the provisional order.</p></div><div class="notification result"><strong data-edit="s2-result-title">EXECUTION RESULT AVAILABLE</strong><p data-edit="s2-result-copy">Status and logs; resulting state accessible via RPC.</p></div><p data-edit="s2-provisional" class="note">Milestones may arrive together. Preconfirmation is provisional.</p></div></div><div class="outcome"><span class="label">Deliverable</span><span data-edit="s2-outcome">Consistent push notifications with clear lifecycle semantics.</span></div><div class="slide-foot"><span class="context">Transaction confirmations · September 2026</span><span>2 / 3</span></div></section><section class="slide" id="slide-3" aria-labelledby="s3title" hidden><div class="eyebrow"><span class="phase">03 / Performance</span><span class="context">OP Stack · Product + Engineering</span></div><h1 id="s3title" data-edit="s3-title">Users still wait between stages.</h1><span class="label">Problem</span><p data-edit="s3-problem" class="problem">Propagation, handoffs, buffering and timers can add delay and variance. Optimizing individual components can miss the waiting between them.</p><div class="solution"><span class="label">Solution</span><h2 data-edit="s3-solution">Remove waiting from the critical path.</h2></div><div class="grid performance-grid"><div class="routing"><span data-edit="s3-candidate" class="label">Candidate: eliminate mempool P2P from the path to the builder</span><div class="route"><span data-edit="s3-route-label" class="route-caption">Where delivery relies on P2P</span><strong>RPC ingress</strong><span class="arrow" aria-hidden="true"></span><span class="hop">Mempool P2P</span><span class="arrow" aria-hidden="true"></span><strong>Builder</strong></div><div class="route direct"><span data-edit="s3-direct-label" class="route-caption">Proposed direct delivery</span><strong>RPC ingress</strong><span class="arrow" aria-hidden="true"></span><strong>Builder</strong></div></div><div class="other-candidates"><span class="label">Other low-hanging fruit</span><ul class="bullets"><li data-edit="s3-bullet0">Redundant handoffs</li><li data-edit="s3-bullet1">Unnecessary buffering</li><li data-edit="s3-bullet2">Timer-driven waits</li></ul></div></div><p data-edit="s3-validate" class="note">Prioritize candidates from measured delays, then verify the benefit under comparable workloads and submission timing.</p><div class="outcome"><span class="label">Deliverable</span><span data-edit="s3-outcome">Lower median, p95/p99 and variance in the confirmation experience.</span></div><div class="slide-foot"><span class="context">Transaction confirmations · September 2026</span><span>3 / 3</span></div></section></main><nav class="deck-controls" aria-label="Slide navigation"><button id="prev" aria-label="Previous slide">← Previous</button><div class="dots"><button data-slide="0" aria-label="Show slide 1" aria-pressed="true">1</button><button data-slide="1" aria-label="Show slide 2" aria-pressed="false">2</button><button data-slide="2" aria-label="Show slide 3" aria-pressed="false">3</button></div><button id="next" aria-label="Next slide">Next →</button><span id="slide-counter" class="sr-only" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"></span></nav><p class="keyboard-hint">Use the left and right arrow keys to navigate.</p>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Close the ownership gap in OP Stack transaction latency: establish the baseline, clarify confirmations, then reduce measured waiting.">
+  <title>OP Stack transaction latency — 3-slide engineering proposal</title>
+  <style>
+:root {
+  --ink: #1a1a1d; --muted: #60616a; --red: #d90027;
+  --paper: #fff; --canvas: #f3f3f2; --line: #dcdcdc; --tint: #fff2f4;
+  font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+  background: var(--canvas); font-size: 16px; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--red); text-underline-offset: 3px; }
+button, summary { cursor: pointer; font: inherit; }
+button, .button, summary {
+  padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 5px;
+  background: #fff; color: var(--ink); font-size: .875rem; line-height: 1.3;
+  text-decoration: none; white-space: nowrap;
+}
+button:hover, .button:hover, summary:hover { border-color: var(--ink); }
+button.primary, button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+button:disabled { opacity: .35; cursor: default; }
+a:focus-visible, button:focus-visible, summary:focus-visible, [contenteditable]:focus-visible { outline: 3px solid #2929d9; outline-offset: 4px; }
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin: 0; }
+.toolbar {
+  max-width: 1344px; padding: .85rem 1.5rem; margin: auto;
+  display: flex; align-items: center; gap: 1.7rem; flex-wrap: wrap;
+}
+.brand { font-size: .82rem; font-weight: 800; letter-spacing: .06em; color: var(--ink); text-decoration: none; }
+.tabs { display: flex; gap: .2rem; }
+.tabs a { color: var(--muted); text-decoration: none; font-size: .875rem; padding: .45rem .7rem; }
+.tabs a[aria-current="page"] { color: var(--ink); font-weight: 700; border-bottom: 2px solid var(--red); }
+.actions { display: flex; gap: .6rem; margin-left: auto; align-items: center; }
+.edit-menu { position: relative; }
+.edit-menu summary { list-style: none; }
+.edit-menu summary::-webkit-details-marker { display: none; }
+.edit-menu summary::after { content: ' ▾'; color: var(--muted); }
+.edit-options {
+  position: absolute; top: calc(100% + .6rem); right: 0; z-index: 5;
+  background: #fff; border: 1px solid var(--line); border-radius: 6px;
+  padding: .6rem; display: grid; gap: .45rem; min-width: 185px;
+  box-shadow: 0 7px 20px #0000000d;
+}
+.edit-options .button { text-align: center; }
+.edit-status { width: 100%; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+.edit-status:empty { display: none; }
+.deck { max-width: 1344px; margin: auto; padding: 0 1.5rem; }
+.slide {
+  background: var(--paper); border-top: 4px solid var(--red);
+  padding: 2rem 2.8rem 1.2rem; min-height: 690px;
+  display: flex; flex-direction: column;
+}
+.eyebrow { display: flex; justify-content: space-between; gap: 1rem; font-size: .75rem; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: var(--muted); }
+.eyebrow .phase { color: var(--red); }
+.slide h1 { font-size: clamp(2rem, 3.35vw, 2.95rem); line-height: 1.1; letter-spacing: -.035em; max-width: 25ch; margin: 1.35rem 0 1.15rem; font-weight: 750; }
+.lead { font-size: 1.18rem; line-height: 1.5; color: var(--muted); max-width: 1000px; margin-bottom: 1.65rem; }
+.slide h2 { font-size: 1.45rem; line-height: 1.3; letter-spacing: -.025em; margin-bottom: 1rem; }
+.label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .065em; color: var(--red); display: block; }
+.measure-grid { display: grid; grid-template-columns: 1.65fr 1fr; gap: 2.5rem; }
+.lifecycle { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; padding: .75rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .94rem; font-weight: 700; line-height: 1.45; }
+.lifecycle .arrow { color: var(--red); }
+.outputs { margin: 1rem 0 0; display: grid; gap: .85rem; }
+.outputs > div { display: grid; grid-template-columns: 6.1rem 1fr; gap: .8rem; }
+.outputs dt { font-weight: 700; font-size: 1rem; }
+.outputs dd { font-size: 1rem; line-height: 1.45; margin: 0; color: var(--muted); }
+.evidence { border-left: 2px solid var(--line); padding-left: 1.5rem; }
+.evidence .stat { font-size: 2.05rem; font-weight: 750; letter-spacing: -.035em; margin: .8rem 0 .35rem; }
+.evidence .stat span { font-size: 1rem; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+.evidence .tail { font-size: 1rem; font-weight: 700; margin-bottom: .8rem; }
+.evidence p { font-size: .95rem; color: var(--muted); line-height: 1.5; }
+.evidence .limit { color: var(--ink); margin-top: .6rem; }
+.decision { display: grid; grid-template-columns: 6.6rem 1fr; gap: 1rem; background: var(--tint); padding: .95rem 1.15rem; margin-top: 1.5rem; align-items: center; }
+.decision p { font-size: 1.1rem; line-height: 1.4; font-weight: 700; }
+.slide-foot { display: flex; justify-content: space-between; gap: 1rem; font-size: .73rem; line-height: 1.5; color: var(--muted); margin-top: auto; padding-top: 1rem; }
+.slide-foot a { color: var(--muted); }
+.contract-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: .3rem; }
+.contract { padding: 1.1rem 0 1.25rem; border-top: 2px solid var(--ink); }
+.contract h3 { font-size: 1.6rem; line-height: 1.25; letter-spacing: -.025em; margin: .8rem 0 .7rem; max-width: 25ch; }
+.contract p { font-size: 1.08rem; line-height: 1.5; color: var(--muted); max-width: 43ch; }
+.contract-note { font-size: .95rem; color: var(--muted); line-height: 1.5; margin-top: .4rem; max-width: 1040px; }
+.performance-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 2.5rem; align-items: start; }
+.routing { border: 1px solid var(--line); padding: 1.2rem 1.4rem; }
+.routing h3 { font-size: 1rem; line-height: 1.4; margin-bottom: 1rem; }
+.route-caption { font-size: .85rem; color: var(--muted); margin-bottom: .45rem; }
+.route { display: flex; gap: .75rem; align-items: center; font-size: 1rem; line-height: 1.4; }
+.route .arrow { flex: 1; text-align: center; color: var(--muted); }
+.route.direct { color: var(--red); }
+.route.direct .arrow { color: var(--red); }
+.hop { background: var(--canvas); padding: .35rem .5rem; }
+.direct-caption { margin-top: 1rem; }
+.routing .note { font-size: .84rem; color: var(--muted); margin-top: .9rem; line-height: 1.45; }
+.investigate h3 { font-size: 1rem; margin-bottom: .6rem; }
+.investigate p { font-size: 1.02rem; line-height: 1.5; color: var(--muted); }
+.investigate .policy { margin-top: 1.2rem; }
+.deck-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1rem 0; }
+.dots { display: flex; gap: .35rem; }
+.keyboard-hint { color: var(--muted); font-size: .76rem; text-align: center; margin: -.25rem 0 .8rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.brief { max-width: 960px; margin: 0 auto 2rem; background: var(--paper); border-top: 4px solid var(--red); padding: 2.2rem 3rem; }
+.brief h1 { font-size: 2.35rem; letter-spacing: -.035em; line-height: 1.12; margin: 1.2rem 0 1rem; max-width: 30ch; }
+.brief .intro { font-size: 1.04rem; line-height: 1.55; color: var(--muted); }
+.brief .decision { grid-template-columns: 6rem 1fr; margin: 1.2rem 0 1.5rem; }
+.brief .decision p { font-size: 1rem; }
+.brief section { margin-top: 1.45rem; }
+.brief h2 { font-size: 1.15rem; line-height: 1.35; letter-spacing: -.012em; margin-bottom: .65rem; }
+.brief h2 .stage { color: var(--red); font-size: .82rem; margin-right: .6rem; font-weight: 700; }
+.brief section p { font-size: .98rem; line-height: 1.55; margin-bottom: .65rem; }
+.brief .checkpoint { border-left: 2px solid var(--red); padding-left: .9rem; margin-top: .7rem; }
+.brief .scope { border-top: 1px solid var(--line); margin-top: 1.45rem; padding-top: .9rem; font-size: .85rem; line-height: 1.5; color: var(--muted); }
+.brief .sources { font-size: .78rem; line-height: 1.5; color: var(--muted); margin-top: .7rem; }
+body.editing [data-edit] { outline: 1px dashed #d9002755; outline-offset: 4px; cursor: text; }
+body.editing [data-edit]:focus { outline: 2px solid var(--red); }
+body.presenting { background: #fff; }
+.presenting .toolbar { padding-top: .5rem; padding-bottom: .5rem; }
+.presenting .edit-action, .presenting .toolbar .brand, .presenting .tabs, .presenting .keyboard-hint { display: none; }
+.presenting .slide { min-height: calc(100dvh - 118px); }
+@media (min-width: 1500px) { .slide { min-height: 740px; padding: 2.3rem 3.2rem 1.4rem; } .slide h1 { font-size: 3.1rem; } .lead { font-size: 1.25rem; } }
+@media (max-width: 1050px) {
+  .slide { min-height: 0; padding: 1.7rem 2rem 1.2rem; }
+  .measure-grid, .performance-grid { gap: 1.7rem; }
+  .measure-grid { grid-template-columns: 1.4fr 1fr; }
+  .lifecycle { font-size: .85rem; gap: .35rem; }
+  .outputs > div { grid-template-columns: 1fr; gap: .25rem; }
+  .performance-grid { grid-template-columns: 1.4fr 1fr; }
+  .route { gap: .5rem; font-size: .9rem; }
+  .brief { margin: 0 1.5rem 2rem; }
+}
+@media (max-width: 700px) {
+  .toolbar { padding: .8rem 1rem; gap: .7rem; }
+  .tabs a { padding: .4rem .5rem; }
+  .brand { font-size: .73rem; }
+  .actions { gap: .35rem; }
+  .deck { padding: 0 .75rem; }
+  .slide { padding: 1.3rem 1.25rem 1rem; }
+  .slide h1 { font-size: 2rem; }
+  .lead { font-size: 1.05rem; margin-bottom: 1.3rem; }
+  .eyebrow .context { display: none; }
+  .measure-grid, .contract-grid, .performance-grid { grid-template-columns: 1fr; gap: 1.3rem; }
+  .evidence { border-left: 0; border-top: 1px solid var(--line); padding: 1rem 0 0; }
+  .evidence .stat { font-size: 1.8rem; margin-top: .5rem; }
+  .outputs > div { grid-template-columns: 5.8rem 1fr; gap: .6rem; }
+  .lifecycle { font-size: .85rem; }
+  .decision, .brief .decision { grid-template-columns: 1fr; gap: .45rem; }
+  .decision p { font-size: 1.05rem; }
+  .contract { padding-bottom: .2rem; }
+  .contract h3 { font-size: 1.4rem; }
+  .contract p { font-size: 1rem; }
+  .contract-note { margin-top: 1rem; }
+  .routing { padding: 1rem; }
+  .route { font-size: .9rem; }
+  .brief { margin: 0 .75rem 1rem; padding: 1.4rem 1.25rem; }
+  .brief h1 { font-size: 1.95rem; }
+  .deck-controls { gap: .65rem; }
+  .deck-controls button { padding: .5rem .6rem; }
+  .keyboard-hint { display: none; }
+  .slide-foot { font-size: .68rem; }
+}
+@media (max-width: 400px) { .toolbar .brand { display: none; } .outputs > div { grid-template-columns: 1fr; } .route { gap: .3rem; font-size: .82rem; } }
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body { background: #fff; }
+  .toolbar, .deck-controls, .keyboard-hint { display: none !important; }
+  .brief { margin: 0; padding: 0; max-width: none; }
+  .brief h1 { font-size: 22pt; margin: 10pt 0 8pt; }
+  .brief .eyebrow { font-size: 7.5pt; margin-top: 9pt; }
+  .brief .intro, .brief section p { font-size: 9.5pt; line-height: 1.35; }
+  .brief h2 { font-size: 11pt; margin-bottom: 5pt; }
+  .brief section { margin-top: 10pt; }
+  .brief section p { margin-bottom: 5pt; }
+  .brief .decision { padding: 8pt; margin: 10pt 0; }
+  .brief .decision p { font-size: 10pt; }
+  .brief .scope, .brief .sources { font-size: 8pt; line-height: 1.3; }
+  .brief .scope { margin-top: 10pt; padding-top: 7pt; }
+  .decision { print-color-adjust: exact; }
+  .deck { max-width: none; padding: 0; }
+  .slide, .slide[hidden] { display: flex !important; min-height: 0; padding: 16pt 0; break-after: page; }
+  .slide:last-child { break-after: auto; }
+  .slide h1 { font-size: 25pt; }
+  .slide .lead { font-size: 12pt; }
+  [data-edit] { outline: none !important; }
+}
+</style>
+</head>
+<body data-page="slides" data-filename="op-stack-confirmations-slides.html" data-revision="ownership-20260910">
+<header class="toolbar">
+  <a class="brand" href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-slides.html">OP STACK</a>
+  <nav class="tabs" aria-label="Meeting documents">
+    <a href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-slides.html" aria-current="page">Slides</a>
+    <a href="https://htmlpreview.github.io/?https://github.com/teddyknox/pages/blob/main/published/op-stack-confirmations-20260909-one-pager.html">One-pager</a>
+  </nav>
+  <div class="actions">
+    <details class="edit-menu edit-action">
+      <summary>Edit</summary>
+      <div class="edit-options">
+        <button id="edit" aria-pressed="false">Edit text</button>
+        <button id="save">Save HTML</button>
+        <a class="button" href="https://github.com/teddyknox/pages/edit/main/published/op-stack-confirmations-20260909-slides.html" target="_blank" rel="noopener">Edit shared page ↗</a>
+      </div>
+    </details>
+    <button id="present" class="primary">Present</button>
+  </div>
+  <p class="edit-status" id="edit-status" role="status" aria-live="polite"></p>
+</header>
+<main class="deck" aria-label="Three-slide presentation">
+  <section class="slide" id="slide-1" aria-labelledby="s1title">
+    <div class="eyebrow"><span class="phase">Stage 1 / Measurement</span><span class="context">OP Stack · Engineering proposal</span></div>
+    <h1 id="s1title" data-edit="s1-title">No one owns the full transaction latency measurement.</h1>
+    <p class="lead" data-edit="s1-problem">Component monitoring exists. Connecting it across ingress, sequencing and RPC delivery has fallen between team responsibilities.</p>
+    <div class="measure-grid">
+      <div>
+        <h2 data-edit="s1-solution">Give one engineering owner the joined baseline.</h2>
+        <div class="lifecycle" aria-label="Milestones to measure">
+          <span data-edit="s1-received">First received</span><span class="arrow" aria-hidden="true">→</span>
+          <span data-edit="s1-ordered">Ordering preconfirmed</span><span class="arrow" aria-hidden="true">→</span>
+          <span data-edit="s1-result">Result available</span>
+        </div>
+        <dl class="outputs">
+          <div><dt>Engineering</dt><dd data-edit="s1-engineering">Latency distributions and coverage, using existing instrumentation.</dd></div>
+          <div><dt>Data</dt><dd data-edit="s1-data">Retained timestamps and exact transaction-to-sub-block membership for builder-policy analysis.</dd></div>
+        </dl>
+      </div>
+      <aside class="evidence" aria-label="Benchmark evidence and its scope">
+        <span class="label">What we measured</span>
+        <p class="stat"><strong data-edit="s1-median">~60 ms</strong> <span>best measured median</span></p>
+        <p class="tail" data-edit="s1-tail">67 ms p99 · 1,000 simple transfers</p>
+        <p data-edit="s1-benchmark">OP Sepolia, with optimized submission timing. Client submission to first sub-block receipt, including network latency.</p>
+        <p class="limit" data-edit="s1-limit">This does not isolate internal OP delays.</p>
+      </aside>
+    </div>
+    <div class="decision"><span class="label">Decision</span><p data-edit="s1-decision">Assign a Stage 1 DRI and a Data partner to complete the baseline.</p></div>
+    <footer class="slide-foot"><span><a href="https://github.com/ethereum-optimism/infra/blob/75496a78b02b209d24619052445693b93add8157/proxyd/metrics.go#L733" target="_blank" rel="noopener">Existing inclusion histogram</a> · Measurement definitions in the one-pager</span><span>1 / 3</span></footer>
+  </section>
+
+  <section class="slide" id="slide-2" aria-labelledby="s2title" hidden>
+    <div class="eyebrow"><span class="phase">Stage 2 / Notifications</span><span class="context">OP Stack · Engineering proposal</span></div>
+    <h1 id="s2title" data-edit="s2-title">Apps still assemble their own confirmation flow.</h1>
+    <p class="lead" data-edit="s2-problem">RPC acknowledgments, sub-block streams and execution results expose different pieces. Each application has to turn them into usable progress.</p>
+    <h2 data-edit="s2-solution">Let applications subscribe to either confirmation, or both.</h2>
+    <div class="contract-grid">
+      <section class="contract" aria-labelledby="order-title">
+        <span class="label">Ordering confirmation</span>
+        <h3 id="order-title" data-edit="s2-order-question">Is my transaction in the sequencer’s order?</h3>
+        <p data-edit="s2-order-result">Notify the application of its provisional position.</p>
+      </section>
+      <section class="contract" aria-labelledby="execution-title">
+        <span class="label">Execution confirmation</span>
+        <h3 id="execution-title" data-edit="s2-execution-question">Did it succeed, and what changed?</h3>
+        <p data-edit="s2-execution-result">Provide receipt status and logs, with the resulting state available through RPC.</p>
+      </section>
+    </div>
+    <p class="contract-note" data-edit="s2-contract">Cover reverted transactions, transactions without logs, revocations and recovery after reconnects. These signals may arrive together; neither implies finality.</p>
+    <div class="decision"><span class="label">Stage 2 outcome</span><p data-edit="s2-outcome">An application can follow one transaction without polling.</p></div>
+    <footer class="slide-foot"><span>Build on existing streams and RPCs · <a href="https://specs.optimism.io/protocol/subblocks.html" target="_blank" rel="noopener">Sub-block semantics</a></span><span>2 / 3</span></footer>
+  </section>
+
+  <section class="slide" id="slide-3" aria-labelledby="s3title" hidden>
+    <div class="eyebrow"><span class="phase">Stage 3 / Performance</span><span class="context">OP Stack · Engineering proposal</span></div>
+    <h1 id="s3title" data-edit="s3-title">Fast sub-blocks still leave transactions waiting.</h1>
+    <p class="lead" data-edit="s3-problem">Transport, buffering and scheduling can delay a transaction before it reaches the next sub-block. The baseline should tell us which waits are worth removing.</p>
+    <h2 data-edit="s3-solution">Start with avoidable waits on the route to the builder.</h2>
+    <div class="performance-grid">
+      <div class="routing">
+        <h3 data-edit="s3-candidate">Candidate: eliminate mempool P2P from the critical path.</h3>
+        <p class="route-caption" data-edit="s3-indirect-label">Where delivery depends on P2P</p>
+        <div class="route"><strong>RPC ingress</strong><span class="arrow" aria-hidden="true">→</span><span class="hop">Mempool P2P</span><span class="arrow" aria-hidden="true">→</span><strong>Builder</strong></div>
+        <p class="route-caption direct-caption" data-edit="s3-direct-label">Direct delivery</p>
+        <div class="route direct"><strong>RPC ingress</strong><span class="arrow" aria-hidden="true">→</span><strong>Builder</strong></div>
+        <p class="note" data-edit="s3-existing">Use an existing direct route where available.</p>
+      </div>
+      <div class="investigate">
+        <h3 data-edit="s3-other-title">Other low-hanging fruit</h3>
+        <p data-edit="s3-other">Remove redundant handoffs, unnecessary buffering and timer-driven waits.</p>
+        <h3 class="policy" data-edit="s3-policy-title">Explain late inclusion</h3>
+        <p data-edit="s3-policy">Separate delivery delay from gas limits and builder policy before choosing a fix.</p>
+      </div>
+    </div>
+    <div class="decision"><span class="label">Stage 3 outcome</span><p data-edit="s3-outcome">Lower median, p95/p99 and variance under matched workloads and submission timing.</p></div>
+    <footer class="slide-foot"><span>Measure each candidate’s benefit · <a href="https://specs.optimism.io/protocol/subblocks.html#transaction-inclusion" target="_blank" rel="noopener">Gas capacity can also defer inclusion</a></span><span>3 / 3</span></footer>
+  </section>
+</main>
+<nav class="deck-controls" aria-label="Slide navigation">
+  <button id="prev" aria-label="Previous slide">← Previous</button>
+  <div class="dots">
+    <button data-slide="0" aria-label="Show slide 1" aria-pressed="true">1</button>
+    <button data-slide="1" aria-label="Show slide 2" aria-pressed="false">2</button>
+    <button data-slide="2" aria-label="Show slide 3" aria-pressed="false">3</button>
+  </div>
+  <button id="next" aria-label="Next slide">Next →</button>
+  <span id="slide-counter" class="sr-only" aria-live="polite"></span>
+</nav>
+<p class="keyboard-hint">Use the left and right arrow keys to navigate.</p>
 <script>
 (() => {
   'use strict';
   const editable = [...document.querySelectorAll('[data-edit]')];
   const editableById = new Map(editable.map(el => [el.dataset.edit, el]));
   const original = new Map(editable.map(el => [el.dataset.edit, el.textContent]));
-  const key = 'op-confirmations-v1-' + document.body.dataset.page;
+  const key = 'op-confirmations-v2-' + document.body.dataset.page;
   const status = document.querySelector('#edit-status');
   const editButton = document.querySelector('#edit');
   let editing = false;
@@ -117,4 +396,6 @@ body.editing [data-edit]{outline:1px dashed #e8002666;outline-offset:4px;border-
     }});
   }
 })();
-</script></body></html>
+</script>
+</body>
+</html>
